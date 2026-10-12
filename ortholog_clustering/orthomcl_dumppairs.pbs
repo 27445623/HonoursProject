@@ -1,0 +1,16 @@
+#!/bin/bash
+#PBS -N dump_pairs
+#PBS -l select=1:ncpus=16:mem=64GB:host=n12
+#PBS -l walltime=48:00:00
+#PBS -q bix
+#PBS -o dump.out
+#PBS -e dump.err
+#PBS -M 27445623@sun.ac.za
+#PBS -m abe
+
+module load app/apptainer
+
+cd $PBS_O_WORKDIR
+
+apptainer exec --cleanenv orthomcl.sif orthomclDumpPairsFiles orthomcl.config
+

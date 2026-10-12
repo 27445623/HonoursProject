@@ -1,0 +1,15 @@
+#!/bin/bash
+#PBS -N mcl
+#PBS -q bix
+#PBS -l select=1:ncpus=32:mem=128GB:host=n12
+#PBS -l walltime=48:00:00
+#PBS -o mcl.out
+#PBS -e mcl.err
+#PBS -M 27445623@sun.ac.za
+#PBS -m abe
+
+module load app/apptainer
+
+cd $PBS_O_WORKDIR
+
+apptainer exec --cleanenv orthomcl.sif mcl mclInput --abc -I 1.5 -te 32 -o mclOutput
