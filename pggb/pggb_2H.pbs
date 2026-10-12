@@ -1,0 +1,40 @@
+#!/bin/bash
+#PBS -N pggb_2H
+#PBS -l walltime=300:00:00
+#PBS -l select=1:ncpus=16:mem=64gb:host=n05
+#PBS -o pggb_2H.out
+#PBS -e pggb_2H.err
+#PBS -M 27445623@sun.ac.za
+#PBS -m abe
+
+module load app/apptainer/1.2.5
+
+cd $PBS_O_WORKDIR
+
+cat PGGB_input_2H/*.fasta > PGGB_out_2H/combined.fasta
+
+apptainer exec pggb.sif python3 -c "
+with open('PGGB_out_2H/combined.fasta') as f, open('PGGB_out_2H/combined.reformatted.fasta', 'w') as out:
+    seq = []
+    for line in f:
+        line = line.rstrip()
+        if line.startswith('>'):
+            if seq:
+                s = ''.join(seq)
+                for i in range(0, len(s), 60):
+                    out.write(s[i:i+60] + '\n')
+            out.write(line + '\n')
+            seq = []
+        else:
+            seq.append(line)
+    if seq:
+        s = ''.join(seq)
+        for i in range(0, len(s), 60):
+            out.write(s[i:i+60] + '\n')
+"
+apptainer exec pggb.sif bgzip PGGB_out_2H/combined.reformatted.fasta
+
+apptainer exec pggb.sif samtools faidx PGGB_out_2H/combined.reformatted.fasta.gz
+
+apptainer exec --cleanenv pggb.sif pggb -i PGGB_out_2H/combined.reformatted.fasta.gz -n 12 -t 16 -p 95 -s 10000 -x auto -P asm5 -o PGGB_out_2H/pggb_out
+
