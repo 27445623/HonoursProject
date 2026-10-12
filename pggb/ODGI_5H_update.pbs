@@ -1,0 +1,18 @@
+#!/bin/bash
+#PBS -N ODGI_5H
+#PBS -l select=1:ncpus=16:mem=64GB
+#PBS -l walltime=24:00:00
+#PBS -q bix
+#PBS -o ODGI_5H.out
+#PBS -e ODGI_5H.err
+#PBS -M 27445623@sun.ac.za
+#PBS -m abe
+
+module load app/apptainer/1.2.5
+cd $PBS_O_WORKDIR
+# Stats
+apptainer exec --cleanenv pggb.sif odgi stats -i PGGB_out_5H/pggb_out/*.smooth.final.og -S > PGGB_out_5H/pggb_out/stats.txt
+# Sort
+apptainer exec --cleanenv pggb.sif odgi sort -i PGGB_out_5H/pggb_out/*.smooth.final.og -o PGGB_out_5H/pggb_out/sorted.og
+# Viz
+apptainer exec --cleanenv pggb.sif odgi viz -i PGGB_out_5H/pggb_out/sorted.og -o PGGB_out_5H/pggb_out/viz.png
