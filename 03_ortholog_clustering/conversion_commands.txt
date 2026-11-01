@@ -1,3 +1,7 @@
+qsub -I -q bix -l select=1:ncpus=12:mem=64gb -l walltime=02:00:00
+
+module load app/apptainer
+
 # Commands for CDS extraction for GET_HOMOLOGUES_EST
 apptainer exec --cleanenv gffread.sif gffread -x Get_homo-est_input/Barke.fna -g honours_input/Barke.fasta honours_input_gff/Barke.gff
 
