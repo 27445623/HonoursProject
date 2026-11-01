@@ -102,7 +102,6 @@ Perform gene clustering across the 12 malt barley accessions using Get_Homologue
 
 Submit the Get_Homologues-EST script:
 
-```bash
 qsub get_homo-est.pbs
 qsub orthomcl_database.pbs
 qsub orthomcl_blast.pbs
