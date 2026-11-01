@@ -128,5 +128,5 @@ Identify genes overlapping presence/absence variation (PAV) regions across the 1
 - PGGB region BED files
 
 ## **Usage**
-bedtools.pbs
+qsub bedtools.pbs
 
