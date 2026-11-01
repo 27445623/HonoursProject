@@ -1,0 +1,14 @@
+#!/bin/bash
+#PBS -N orthomcl_db
+#PBS -l select=1:ncpus=16:mem=64GB:host=n12
+#PBS -l walltime=400:00:00
+#PBS -M 27445623@sun.ac.za
+#PBS -m abe
+#PBS -o ortho_db.out
+#PBS -e ortho_db.err
+
+module load app/apptainer
+cd $PBS_O_WORKDIR
+
+
+apptainer exec --cleanenv mysql.sif mysqld --datadir=/home/27445623/mysql_data --socket=/home/27445623/mysql_run/mysql.sock --pid-file=/home/27445623/mysql_run/mysql.pid --port=3307 --skip-networking=0 --innodb_buffer_pool_size=80G --innodb_buffer_pool_instances=8 --innodb_lock_wait_timeout=300 --innodb_log_file_size=1G

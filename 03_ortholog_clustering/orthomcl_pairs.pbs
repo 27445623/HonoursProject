@@ -1,0 +1,14 @@
+#!/bin/bash
+#PBS -N ortho_pairs
+#PBS -l select=1:ncpus=32:mem=128GB:host=n12
+#PBS -l walltime=400:00:00
+#PBS -e pairs.err
+#PBS -o pairs.out
+#PBS -M 27445623@sun.ac.za
+#PBS -m abe
+
+module load app/apptainer
+
+cd $PBS_O_WORKDIR
+
+apptainer exec --cleanenv orthomcl.sif orthomclPairs orthomcl.config orthomcl_pairs.log cleanup=yes

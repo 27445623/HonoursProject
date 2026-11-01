@@ -1,0 +1,15 @@
+#!/bin/bash
+#PBS -N Parser
+#PBS -l select=1:ncpus=16:mem=64GB
+#PBS -l walltime=48:00:00
+#PBS -q bix
+#PBS -o parser.out
+#PBS -e parser.err
+#PBS -M 27445623@sun.ac.za
+#PBS -m abe
+
+module load app/apptainer
+
+cd $PBS_O_WORKDIR
+
+apptainer exec --cleanenv orthomcl.sif orthomclBlastParser orthomcl_blast_results.txt OrthoMCL_input/compliantFasta >> similar_sequences.txt

@@ -1,0 +1,18 @@
+#!/bin/bash
+#PBS -N blast
+#PBS -q bix
+#PBS -l select=1:ncpus=16:mem=64GB
+#PBS -l walltime=100:00:00
+#PBS -e blast.err
+#PBS -o blast.out
+#PBS -M 27445623@sun.ac.za
+#PBS -m abe
+
+module load app/NCBI
+
+cd $PBS_O_WORKDIR
+
+makeblastdb -in goodProteins.fasta -dbtype prot
+
+blastp -query goodProteins.fasta -db goodProteins.fasta -out orthomcl_blast_results.txt -outfmt 6 -evalue 1e-5 -num_threads 16
+

@@ -1,0 +1,15 @@
+#!/bin/bash
+#PBS -N get_hom_est
+#PBS -q bix
+#PBS -l select=1:ncpus=64:mem=256gb:host=n12
+#PBS -l walltime=100:00:00
+#PBS -o get_hom_est.out
+#PBS -e get_hom_est.err
+#PBS -M 27445623@sun.ac.za
+#PBS -m abe
+
+module load app/apptainer
+
+cd $PBS_O_WORKDIR
+
+apptainer exec --cleanenv get_homologues.sif get_homologues-est.pl -d Get_homo-est_input -M -m local -n 64 -t 0
