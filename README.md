@@ -7,8 +7,11 @@ Generate a phylogenetic ordering of the 12 malt barley accessions using MashTree
 - `mashtree.pbs`: Executes MashTree to generate a phylogenetic tree from the input genome assemblies.
 
 ## **Requirements**
-- MashTree
+- Mashtree
 - Genome assembly FASTA files for the 12 accessions
 
 ## **Usage**
 qsub mashtree.pbs
+
+## **Visualisation**
+The generated .dnd phylogenetic tree file was uploaded to iTOL  for phylogenetic tree visualisation.
