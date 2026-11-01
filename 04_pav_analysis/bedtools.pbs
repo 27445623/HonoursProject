@@ -1,0 +1,31 @@
+#!/bin/bash
+#PBS -N bedtools
+#PBS -l select=1:ncpus=16:mem=64GB
+#PBS -l walltime=24:00:00
+#PBS -o bedtools.out
+#PBS -e bedtools.err
+#PBS -M 27445623@sun.ac.za
+#PBS -m abe
+
+module load app/bedtools
+
+cd $PBS_O_WORKDIR
+
+CHR="7H"
+
+REGIONS=PGGB_out_${CHR}/pggb_out/regions.bed
+REF_PATH="mxchr${CHR}"
+
+# 1. Rename mxchrXH -> chrXH so it matches the GFF/gene BED naming
+sed "s/^${REF_PATH}/chr${CHR}/" ${REGIONS} > PGGB_out_${CHR}/pggb_out/regions_renamed.bed
+
+# 2. Sort the renamed regions file
+sort -k1,1 -k2,2n PGGB_out_${CHR}/pggb_out/regions_renamed.bed > regions_${CHR}_sorted.bed
+
+# 3. Filter just this chromosome's genes out of the full Morex gene BED, then sort
+grep "^chr${CHR}" bed_input/Morex_genes.bed > Morex_genes_${CHR}.bed
+sort -k1,1 -k2,2n Morex_genes_${CHR}.bed > Morex_genes_${CHR}_sorted.bed
+
+# 4. Intersect
+bedtools intersect -sorted -a regions_${CHR}_sorted.bed -b Morex_genes_${CHR}_sorted.bed -wa -wb \
+  > bedtools_output/pav_gene_overlap_${CHR}.bed
