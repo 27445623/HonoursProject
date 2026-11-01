@@ -119,15 +119,14 @@ Identify genes overlapping presence/absence variation (PAV) regions across the 1
 
 ## **Scripts**
 
-- `pav_gene_overlap.sh` (or the actual script filename): Renames chromosome identifiers, sorts PAV regions and Morex gene coordinates, and uses BEDTools to identify overlapping genes for each chromosome.
+- `bedtools.pbs`: Renames chromosome identifiers, sorts PAV regions and Morex gene coordinates, and uses BEDTools to identify overlapping genes for each chromosome.
 
 ## **Requirements**
 - BEDTools
-- AWK / grep / sed
+- AWK
 - Morex gene BED file
 - PGGB region BED files
 
 ## **Usage**
-```bash
-bash pav_gene_overlap.sh
+bedtools.pbs
 
