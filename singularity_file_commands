@@ -1,0 +1,14 @@
+# 1. Start an interactive HPC session
+qsub -I -q bix -l select=1:ncpus=12:mem=64gb -l walltime=00:30:00
+
+# 2. Load Apptainer module
+module load app/apptainer
+
+# 3. Pull container images
+apptainer pull pggb.sif docker://ghcr.io/pangenome/pggb:latest
+apptainer pull get_homologues.sif docker://csicunam/get_homologues:latest
+apptainer pull mysql.sif docker://mysql:5.7
+apptainer pull orthomcl.sif docker://granek/orthomcl
+apptainer pull mashtree.sif docker://quay.io/biocontainers/mashtree:1.4.6--pl5321h87e0c26_4
+apptainer pull gffread.sif docker://quay.io/biocontainers/gffread:0.12.7--hdcf5f25_4
+apptainer pull node_18.sif docker://node:18
