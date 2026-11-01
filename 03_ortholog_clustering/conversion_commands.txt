@@ -1,0 +1,50 @@
+# Commands for CDS extraction for GET_HOMOLOGUES_EST
+apptainer exec --cleanenv gffread.sif gffread -x Get_homo-est_input/Barke.fna -g honours_input/Barke.fasta honours_input_gff/Barke.gff
+
+apptainer exec --cleanenv gffread.sif gffread -x Get_homo-est_input/Erica.fna -g honours_input/Erica.fasta honours_input_gff/Erica.gff3
+
+apptainer exec --cleanenv gffread.sif gffread -x Get_homo-est_input/Nemesia.fna -g honours_input/Nemesia.fasta honours_input_gff/Nemesia.gff3
+
+apptainer exec --cleanenv gffread.sif gffread -x Get_homo-est_input/Malgas.fna -g honours_input/Malgas.fasta honours_input_gff/Malgas.gff3
+
+apptainer exec --cleanenv gffread.sif gffread -x Get_homo-est_input/RGT_Planet.fna -g honours_input/RGT_Planet.fasta honours_input_gff/RGT_Planet.gff
+
+apptainer exec --cleanenv gffread.sif gffread -x Get_homo-est_input/UVC8.fna -g honours_input/UVC8.fasta honours_input_gff/UVC8.gff3
+
+apptainer exec --cleanenv gffread.sif gffread -x Get_homo-est_input/Golden_Promise.fna -g honours_input/Golden_Promise.fasta honours_input_gff/Golden_Promise.gff
+
+apptainer exec --cleanenv gffread.sif gffread -x Get_homo-est_input/Igri.fna -g honours_input/Igri.fasta honours_input_gff/Igri.gff
+
+apptainer exec --cleanenv gffread.sif gffread -x Get_homo-est_input/Kadie.fna -g honours_input/Kadie.fasta honours_input_gff/Kadie.gff3
+
+apptainer exec --cleanenv gffread.sif gffread -x Get_homo-est_input/Hocket.fna -g honours_input/Hocket.fasta honours_input_gff/Hockett.gff
+
+apptainer exec --cleanenv gffread.sif gffread -x Get_homo-est_input/Morex.fna -g honours_input/Morex.fasta honours_input_gff/Morex.gff
+
+apptainer exec --cleanenv gffread.sif gffread -x Get_homo-est_input/Maximus.fna -g honours_input/Maximus.fasta honours_input_gff/Maximus.gff
+
+# Commands for Protein extraction for OrthoMCL
+apptainer exec --cleanenv gffread.sif gffread honours_input_gff/Barke.gff -g honours_input/Barke.fasta -y OrthoMCL_input/Barke.faa
+
+apptainer exec --cleanenv gffread.sif gffread honours_input_gff/Erica.gff3 -g honours_input/Erica.fasta -y OrthoMCL_input/Erica.faa
+
+apptainer exec --cleanenv gffread.sif gffread honours_input_gff/Malgas.gff3 -g honours_input/Malgas.fasta -y OrthoMCL_input/Malgas.faa
+
+apptainer exec --cleanenv gffread.sif gffread honours_input_gff/RGT_Planet.gff -g honours_input/RGT_Planet.fasta -y OrthoMCL_input/RGT_Planet.faa
+
+apptainer exec --cleanenv gffread.sif gffread honours_input_gff/UVC8.gff3 -g honours_input/UVC8.fasta -y OrthoMCL_input/UVC8.faa
+
+apptainer exec --cleanenv gffread.sif gffread honours_input_gff/Kadie.gff3 -g honours_input/Kadie.fasta -y OrthoMCL_input/Kadie.faa
+
+apptainer exec --cleanenv gffread.sif gffread honours_input_gff/Hockett.gff -g honours_input/Hocket.fasta -y OrthoMCL_input/Hocket.faa
+
+apptainer exec --cleanenv gffread.sif gffread honours_input_gff/Nemesia.gff3 -g honours_input/Nemesia.fasta -y OrthoMCL_input/Nemesia.faa
+
+apptainer exec --cleanenv gffread.sif gffread honours_input_gff/Golden_Promise.gff -g honours_input/Golden_Promise.fasta -y OrthoMCL_input/Golden_Promise.faa
+
+apptainer exec --cleanenv gffread.sif gffread honours_input_gff/Igri.gff -g honours_input/Igri.fasta -y OrthoMCL_input/Igri.faa
+
+apptainer exec --cleanenv gffread.sif gffread honours_input_gff/Morex.gff -g honours_input/Morex.fasta -y OrthoMCL_input/Morex.faa
+
+apptainer exec --cleanenv gffread.sif gffread honours_input_gff/Maximus.gff -g honours_input/Maximus_get.fasta -y OrthoMCL_input/Maximus.faa
+  
