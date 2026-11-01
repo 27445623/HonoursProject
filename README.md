@@ -39,3 +39,32 @@ qsub mashtree.pbs
 
 ## **Visualisation**
 The generated .dnd phylogenetic tree file was uploaded to iTOL  for phylogenetic tree visualisation.
+
+# Task 2: Pangenome Graph Construction and Analysis
+
+## **Description**
+Generate chromosome-specific pangenome graphs for the 12 malt barley accessions using PGGB. Use ODGI to analyse, sort and visualise the graphs, followed by regional graph analysis and presence/absence variation (PAV) analysis.
+
+## **Scripts**
+
+- `chromosome_extraction`: Uses AWK to extract chromosome-specific sequences (1H–7H) from the whole-genome FASTA files.
+- `pggb.pbs` (7 scripts): Executes PGGB separately for each chromosome (1H–7H) to construct chromosome-specific pangenome graphs.
+- `odgi_H_update.pbs` (7 scripts): Performs ODGI graph statistics, sorting and visualisation for each chromosome.
+- `odgi_regions/`: Contains chromosome-specific scripts for:
+  - **Untangle:** Investigates graph path relationships within selected genomic regions.
+  - **PAV:** Analyses presence/absence variation across the pangenome graphs.
+
+## **Requirements**
+- PGGB
+- ODGI
+- AWK
+- Apptainer
+- Whole-genome FASTA files for the 12 accessions
+- Morex reference genome assembly
+
+## **Usage**
+
+Submit the chromosome-specific PGGB and ODGI scripts to the HPC:
+
+qsub pggb.pbs
+qsub odgi_H_update.pbs
