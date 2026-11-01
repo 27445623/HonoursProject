@@ -13,3 +13,5 @@ module load app/apptainer
 cd $PBS_O_WORKDIR
 
 apptainer exec --cleanenv orthomcl.sif orthomclMclToGroups Barley_OG_ 1000 < mclOutput > groups.txt
+
+apptainer exec --cleanenv orthomcl.sif orthomclSingletons orthomcl.config
