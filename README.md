@@ -68,3 +68,48 @@ Submit the chromosome-specific PGGB and ODGI scripts to the HPC:
 
 qsub pggb.pbs
 qsub odgi_H_update.pbs
+
+# Task 3: Gene Clustering
+
+## **Description**
+Perform gene clustering across the 12 malt barley accessions using Get_Homologues-EST and OrthoMCL to identify shared and accession-specific gene groups. Protein-coding sequences are extracted from the genome annotations and used as input for the clustering workflows.
+
+## **Scripts**
+
+- `conversion_commands.txt`: Contains GFFread commands used to extract coding sequences (`.fna`) and protein sequences (`.faa`) from the genome annotations.
+- `get_homo-est.pbs`: Executes Get_Homologues-EST to perform gene clustering across the 12 accessions.
+- `orthomcl.config`: Contains the configuration settings for the OrthoMCL database and clustering workflow.
+- `orthomcl_database.pbs`: Sets up the MySQL database required by OrthoMCL.
+- `orthomcl_blast.pbs`: Performs all-against-all BLASTP comparisons of the protein sequences.
+- `orthomcl_parse.pbs`: Parses the BLASTP results into the format required by OrthoMCL.
+- `orthomcl_load_blast.pbs`: Loads the parsed similarity results into the OrthoMCL database.
+- `orthomcl_pairs.pbs`: Identifies orthologous, in-paralogous and co-orthologous relationships.
+- `orthomcl_dumppairs.pbs`: Exports the sequence-pair relationships from the database.
+- `orthomcl_mcl.pbs`: Performs Markov Cluster Algorithm (MCL) clustering.
+- `orthomcl_groups.pbs`: Converts the MCL output into OrthoMCL gene groups.
+
+## **Requirements**
+- Get_Homologues-EST
+- OrthoMCL
+- GFFread
+- BLASTP
+- MCL
+- MySQL
+- Apptainer
+- Genome assembly FASTA files and corresponding GFF annotation files for the 12 accessions
+
+## **Usage**
+
+Submit the Get_Homologues-EST script:
+
+```bash
+qsub get_homo-est.pbs
+qsub orthomcl_database.pbs
+qsub orthomcl_blast.pbs
+qsub orthomcl_parse.pbs
+qsub orthomcl_load_blast.pbs
+qsub orthomcl_pairs.pbs
+qsub orthomcl_dumppairs.pbs
+qsub orthomcl_mcl.pbs
+qsub orthomcl_groups.pbs
+
