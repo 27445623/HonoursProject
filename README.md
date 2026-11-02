@@ -130,3 +130,13 @@ Identify genes overlapping presence/absence variation (PAV) regions across the 1
 ## **Usage**
 qsub bedtools.pbs
 
+# Task 6: Pangenome Visualisation Using Panache
+
+## **Description**
+Visualise the barley pangenome and presence/absence variation (PAV) across the 12 malt barley accessions using Panache. Chromosome-specific PAV matrices were extracted from the combined PAV dataset, sorted and divided into smaller files to prepare them for visualisation.
+
+## **Software and Dependencies**
+- Panache
+- Node.js 18
+- npm
+- Apptainer
