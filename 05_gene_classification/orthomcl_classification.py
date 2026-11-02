@@ -1,15 +1,12 @@
+
 import argparse
 import os
-import sys
-from collections import Counter, defaultdict
+from collections import Counter
 
-# ---------------------------------------------------------------- CONFIG ----
 DEFAULT_GROUPS = "C:/HonoursProj/ortholog_clustering/groups.txt"
 DEFAULT_SINGLETONS = "C:/HonoursProj/ortholog_clustering/singletons.txt"
 
-# Taxon names are compared case-insensitively. Add aliases if your file
-# spells a taxon differently (e.g. "RGT_Planet", "RGTPlanet", "Planet").
-SA_TAXA = {
+SA_VARIETIES = {
     "erica": "Erica",
     "kadie": "Kadie",
     "malgas": "Malgas",
@@ -17,147 +14,166 @@ SA_TAXA = {
     "rgt_planet": "RGT_Planet",
     "rgtplanet": "RGT_Planet",
     "planet": "RGT_Planet",
-    "uvc8": "UVC8",
+    "uvc8": "UVC8"
 }
-SA5 = {"Erica", "Kadie", "Malgas", "Nemesia", "RGT_Planet"}  # SA cultivars excl. UVC8
-SA6 = SA5 | {"UVC8"}                                          # all SA-grown
-RGT = "RGT_Planet"
 
-# Substrings in a gene ID that mark it as an international cultivar.
-# Used to detect mislabelled members such as "Erica|mRNA:Erica_BOWMAN.3HG...".
-INTL_ID_MARKERS = ["MOREX", "IGRI", "HOCKETT", "GOLDEN_PROMISE", "BARKE", "MAXIMUS"]  # Bowman added because it appears in your Barley_OG_1000 line
-# --------------------------------------------------------------------------
+SA5 = {"Erica", "Kadie", "Malgas", "Nemesia", "RGT_Planet"}
+SA6 = SA5 | {"UVC8"}
+
+INTL_MARKERS = ["MOREX", "IGRI", "HOCKETT", "GOLDEN_PROMISE", "BARKE", "MAXIMUS"]
 
 
-def normalise(taxon):
-    return SA_TAXA.get(taxon.lower(), taxon)
+def normalise(variety):
+    return SA_VARIETIES.get(variety.lower(), variety)
 
 
-def looks_international(gene_id):
-    g = gene_id.upper()
-    return any(m in g for m in INTL_ID_MARKERS)
+def parse_variety(member, fix_labels, mismatches, gid):
+    variety, _, gene = member.partition("|")
+    variety = normalise(variety)
 
-
-def parse_member(member, fix_labels, mismatches, gid):
-    taxon, _, gene = member.partition("|")
-    taxon = normalise(taxon)
-    if taxon in SA6 and looks_international(gene):
+    if variety in SA6 and any(marker in gene.upper() for marker in INTL_MARKERS):
         mismatches.append((gid, member))
+
         if fix_labels:
-            taxon = "INTERNATIONAL_MISLABELLED"
-    return taxon
+            variety = "INTERNATIONAL_MISLABELLED"
+
+    return variety
 
 
 def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("groups", nargs="?", default=DEFAULT_GROUPS)
-    ap.add_argument("singletons", nargs="?", default=DEFAULT_SINGLETONS)
-    ap.add_argument("--outdir", default="orthomcl_results")
-    ap.add_argument("--fix-labels", action="store_true",
-                    help="Treat SA-labelled members with an international gene ID "
-                         "(e.g. Erica|..._BOWMAN) as international instead of SA.")
-    args = ap.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("groups", nargs="?", default=DEFAULT_GROUPS)
+    parser.add_argument("singletons", nargs="?", default=DEFAULT_SINGLETONS)
+    parser.add_argument("--outdir", default="orthomcl_results")
+    parser.add_argument("--fix-labels", action="store_true")
+    args = parser.parse_args()
+
     os.makedirs(args.outdir, exist_ok=True)
 
     categories = {
-        "sa_only_all6": [],        # every taxon in SA6
-        "sa5_only_no_uvc8": [],    # every taxon in SA5, UVC8 absent
-        "rgt_no_international": [],# RGT_Planet present, every taxon in SA6
-        "rgt_planet_only": [],     # RGT_Planet is the only taxon
-        "uvc8_only": [],
+        "sa_only_all6": [],
+        "sa5_only_no_uvc8": [],
+        "rgt_no_international": [],
+        "rgt_planet_only": [],
+        "uvc8_only": []
     }
-    group_lines = {}               # gid -> original member string (only kept for hits)
+
     total_groups = 0
-    taxon_presence = Counter()     # groups containing each taxon
+    variety_counts = Counter()
     mismatches = []
+    group_lines = {}
     bad_lines = 0
 
-    with open(args.groups) as f, \
-         open(os.path.join(args.outdir, "group_taxa_matrix.tsv"), "w") as matrix:
+    # Read OrthoMCL groups
+    with open(args.groups) as f, open(os.path.join(args.outdir, "group_taxa_matrix.tsv"), "w") as matrix:
         for line in f:
             line = line.strip()
+
             if not line:
                 continue
+
             if ":" not in line:
                 bad_lines += 1
                 continue
+
             header, members = line.split(":", 1)
             gid = header.split("(")[0].strip()
             members = members.split()
+
             total_groups += 1
 
-            tx = {parse_member(m, args.fix_labels, mismatches, gid) for m in members}
-            for t in tx:
-                taxon_presence[t] += 1
+            varieties = {
+                parse_variety(m, args.fix_labels, mismatches, gid)
+                for m in members
+            }
 
-            hit = False
-            if tx <= SA6:
-                categories["sa_only_all6"].append(gid); hit = True
-                if tx == {RGT}:
-                    categories["rgt_planet_only"].append(gid)
-                if tx == {"UVC8"}:
-                    categories["uvc8_only"].append(gid)
-                if RGT in tx:
-                    categories["rgt_no_international"].append(gid)
-                if "UVC8" not in tx:
-                    categories["sa5_only_no_uvc8"].append(gid)
-            if hit:
+            for variety in varieties:
+                variety_counts[variety] += 1
+
+            matrix.write(f"{gid}\t{len(members)}\t{','.join(sorted(varieties))}\n")
+
+            # Identify South African groups
+            if varieties <= SA6:
                 group_lines[gid] = " ".join(members)
-            matrix.write(f"{gid}\t{len(members)}\t{','.join(sorted(tx))}\n")
+                categories["sa_only_all6"].append(gid)
 
-    # ---- write category files
-    for name, gids in categories.items():
-        with open(os.path.join(args.outdir, f"{name}.txt"), "w") as o:
-            for g in gids:
-                o.write(f"{g}: {group_lines[g]}\n")
+                if "UVC8" not in varieties:
+                    categories["sa5_only_no_uvc8"].append(gid)
 
-    # ---- singletons (one gene per line, or whitespace-separated)
-    sing_taxa = Counter()
-    n_sing = 0
+                if "RGT_Planet" in varieties:
+                    categories["rgt_no_international"].append(gid)
+
+                if varieties == {"RGT_Planet"}:
+                    categories["rgt_planet_only"].append(gid)
+
+                if varieties == {"UVC8"}:
+                    categories["uvc8_only"].append(gid)
+
+    # Save category files
+    for name, groups in categories.items():
+        with open(os.path.join(args.outdir, name + ".txt"), "w") as f:
+            for gid in groups:
+                f.write(f"{gid}: {group_lines[gid]}\n")
+
+    # Count singletons per variety
+    singleton_counts = Counter()
+
     with open(args.singletons) as f:
         for line in f:
             for item in line.split():
-                taxon = normalise(item.split("|")[0])
-                gene = item.partition("|")[2]
-                if taxon in SA6 and looks_international(gene):
-                    taxon = "INTERNATIONAL_MISLABELLED" if args.fix_labels else taxon
-                sing_taxa[taxon] += 1
-                n_sing += 1
+                variety, _, gene = item.partition("|")
+                variety = normalise(variety)
 
-    # ---- report
-    lines = []
-    lines.append(f"Total groups:                                   {total_groups}")
-    lines.append(f"Total singletons:                               {n_sing}")
-    lines.append("")
-    lines.append(f"SA-only groups (all 6 incl. UVC8):              {len(categories['sa_only_all6'])}")
-    lines.append(f"Unique to 5 SA cultivars (no UVC8):             {len(categories['sa5_only_no_uvc8'])}")
-    lines.append(f"Contain RGT_Planet, no international:           {len(categories['rgt_no_international'])}")
-    lines.append(f"   of which RGT_Planet only:                    {len(categories['rgt_planet_only'])}")
-    lines.append(f"UVC8-only groups:                               {len(categories['uvc8_only'])}")
-    lines.append("")
-    lines.append("Groups containing each taxon:")
-    for t, c in sorted(taxon_presence.items(), key=lambda x: -x[1]):
-        lines.append(f"   {t:28s}{c}")
-    lines.append("")
-    lines.append("Singletons per taxon:")
-    for t, c in sorted(sing_taxa.items(), key=lambda x: -x[1]):
-        lines.append(f"   {t:28s}{c}")
-    sa_sing = sum(c for t, c in sing_taxa.items() if t in SA6)
-    lines.append(f"   SA-grown singletons total:   {sa_sing}")
-    lines.append("")
-    lines.append(f"Possible mislabelled members (SA taxon, international gene ID): {len(mismatches)}")
-    lines.append(f"   --fix-labels was {'ON' if args.fix_labels else 'OFF'}")
+                if variety in SA6 and any(m in gene.upper() for m in INTL_MARKERS):
+                    if args.fix_labels:
+                        variety = "INTERNATIONAL_MISLABELLED"
+
+                singleton_counts[variety] += 1
+
+    # Generate summary
+    report = [
+        f"Total groups:                                   {total_groups}",
+        f"Total singletons:                               {sum(singleton_counts.values())}",
+        "",
+        f"SA-only groups (all 6 incl. UVC8):              {len(categories['sa_only_all6'])}",
+        f"Unique to 5 SA varieties (no UVC8):             {len(categories['sa5_only_no_uvc8'])}",
+        f"Contain RGT_Planet, no international:           {len(categories['rgt_no_international'])}",
+        f"   of which RGT_Planet only:                    {len(categories['rgt_planet_only'])}",
+        f"UVC8-only groups:                               {len(categories['uvc8_only'])}",
+        "",
+        "Groups containing each variety:"
+    ]
+
+    for variety, count in variety_counts.most_common():
+        report.append(f"   {variety:28s}{count}")
+
+    report.append("")
+    report.append("Singletons per variety:")
+
+    for variety, count in singleton_counts.most_common():
+        report.append(f"   {variety:28s}{count}")
+
+    sa_singletons = sum(singleton_counts[v] for v in SA6)
+    report.append(f"   SA-grown singletons total:   {sa_singletons}")
+
+    report.append("")
+    report.append(f"Possible mislabelled members: {len(mismatches)}")
+    report.append(f"--fix-labels was {'ON' if args.fix_labels else 'OFF'}")
+
     if bad_lines:
-        lines.append(f"Skipped malformed group lines: {bad_lines}")
+        report.append(f"Skipped malformed group lines: {bad_lines}")
 
-    report = "\n".join(lines)
+    report = "\n".join(report)
     print(report)
-    with open(os.path.join(args.outdir, "summary.txt"), "w") as o:
-        o.write(report + "\n")
-    with open(os.path.join(args.outdir, "mislabelled_members.txt"), "w") as o:
-        for gid, m in mismatches:
-            o.write(f"{gid}\t{m}\n")
+
+    with open(os.path.join(args.outdir, "summary.txt"), "w") as f:
+        f.write(report + "\n")
+
+    with open(os.path.join(args.outdir, "mislabelled_members.txt"), "w") as f:
+        for gid, member in mismatches:
+            f.write(f"{gid}\t{member}\n")
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
+
