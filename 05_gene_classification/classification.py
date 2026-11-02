@@ -1,20 +1,17 @@
-"""Pangenome stats + figures from a GET_HOMOLOGUES-EST matrix.
-Usage: python pangenome_analysis.py pangenome_matrix_t0.tab [cluster_to_chr.tsv]
-"""
 import re, sys
 import numpy as np, pandas as pd
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-# ---- groups (edit if needed) ----
+
 COMMERCIAL = ["Erica", "Kadie", "Malgas", "Nemesia"]
-SA = COMMERCIAL + ["UVC8", "RGT_Planet"]            # all SA-grown
+SA = COMMERCIAL + ["UVC8", "RGT_Planet"] 
 INTL = ["Barke", "Golden_Promise", "Hocket", "Igri", "Maximus", "Morex"]
 ORDER = ["Morex", "Maximus", "Igri", "Barke", "Golden_Promise", "Hocket",
          "RGT_Planet", "UVC8", "Erica", "Malgas", "Kadie", "Nemesia"]
 COL = {"Core": "#1f77b4", "Shell": "#ff7f0e", "Cloud": "#2ca02c"}
 
-# ---- load: rows = accessions, columns = clusters, presence/absence ----
+# loads file
 df = pd.read_csv(sys.argv[1], sep="\t", index_col=0)
 if df.shape[0] > df.shape[1]: df = df.T
 df.index = [re.sub(r"\.fna(\.nucl)?$", "", i) for i in df.index]
@@ -22,7 +19,7 @@ df.columns = [re.sub(r"\.fna$", "", re.sub(r"^\d+_", "", c)) for c in df.columns
 P = df.apply(pd.to_numeric, errors="coerce").fillna(0).gt(0)
 N, total = P.shape
 
-# ---- core / shell / cloud ----
+# core, shell, cloud
 n = P.sum()
 cat = pd.Series("Shell", index=P.columns)   # shell = 2 to N-1 accessions
 cat[n == 1] = "Cloud"                       # cloud = 1 accession
@@ -33,7 +30,7 @@ log += [f"{c}: {(cat == c).sum():,} ({100 * (cat == c).mean():.1f}%)" for c in C
 per_acc = pd.DataFrame({c: P.loc[:, cat == c].sum(axis=1) for c in COL})
 log.append("\nClusters per accession:\n" + per_acc.assign(Total=per_acc.sum(axis=1)).to_string())
 
-# ---- chromosome (from cluster name, or optional mapping file) ----
+# chromosome specific grouping
 cmap = dict(pd.read_csv(sys.argv[2], sep="\t", header=None).values) if len(sys.argv) > 2 else {}
 def chrom(name):
     if name in cmap: return cmap[name]
@@ -43,7 +40,7 @@ chrs = pd.Series([chrom(c) for c in P.columns], index=P.columns)
 CHR = [f"{i}H" for i in range(1, 8)] + ["Unknown"]
 per_chr = pd.DataFrame({c: cat[cat == c].groupby(chrs).size() for c in COL}).reindex(CHR).fillna(0).astype(int)
 
-# ---- group-specific clusters ----
+# Group-specific clusters
 sa_only = P[SA].any() & ~P[INTL].any()
 c5 = (chrs[sa_only] == "5H").sum()
 log.append(f"\nSA-specific clusters (>=1 SA, no international): {sa_only.sum():,}; "
@@ -55,7 +52,7 @@ all4 = no_uvc8 & P[COMMERCIAL].all()
 log.append(f"Commercial SA clusters absent in UVC8: {no_uvc8.sum():,}; in all four: "
            f"{all4.sum():,} ({100 * all4.sum() / no_uvc8.sum():.1f}%)")
 
-# ---- Jaccard ----
+# Jaccard
 X = P.values.astype(int)
 inter = X @ X.T
 s = X.sum(1)
@@ -70,7 +67,7 @@ log.append(f"  UVC8 vs commercial: {rng(['UVC8'], COMMERCIAL)}")
 log.append(f"  RGT_Planet vs international: {rng(['RGT_Planet'], INTL)}")
 log.append(f"  RGT_Planet vs commercial: {rng(['RGT_Planet'], COMMERCIAL)}")
 
-# ---- accumulation curve (mean over random accession orders) ----
+# Accumulation curve
 rs = np.random.default_rng(1)
 orders = [rs.permutation(N) for _ in range(200)]
 curve = np.mean([[P.values[o[:k]].any(axis=0).sum() for k in range(1, N + 1)] for o in orders], axis=0)
@@ -80,7 +77,7 @@ log.append(f"Clusters added by last accession: {curve[-1] - curve[-2]:,.0f}")
 open("summary_stats.txt", "w").write("\n".join(log))
 print("\n".join(log))
 
-# ---- figures ----
+# Figures
 def stacked(ax, d, title, xlabel):
     bot = np.zeros(len(d))
     for c in COL:
