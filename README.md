@@ -1,3 +1,11 @@
+# South African Malt Barley Pangenome Analysis
+
+## Project Description
+
+This project investigates structural and gene-content variation across 12 malt barley (*Hordeum vulgare*) genomes, with a particular focus on South African malt barley varieties. A computational comparative genomics approach was used to construct and analyse a pangenome, identify shared and variable genomic regions, classify gene clusters, and investigate patterns of presence-absence variation (PAV).
+
+The workflow incorporates phylogenetic analysis, pangenome graph construction, gene clustering, PAV analysis, and genome visualisation to characterise genomic diversity across the selected barley accessions.
+
 # Container Setup
 
 ## **Description**
@@ -129,6 +137,26 @@ Identify genes overlapping presence/absence variation (PAV) regions across the 1
 
 ## **Usage**
 qsub bedtools.pbs
+
+# Task 5: Pangenome Classification
+
+## **Description**
+Classify gene clusters into core, shell and cloud categories based on their presence and absence across the 12 malt barley accessions. The Python script also supports comparisons between the South African accessions and the remaining accessions.
+
+## **Script**
+- `classification.py`: Processes the pangenome presence-absence matrix and classifies gene clusters according to their distribution across the accessions.
+
+## **Requirements**
+- Python 3
+- pandas
+- NumPy
+- Matplotlib
+- Pangenome presence-absence matrix (`pangenome_matrix_t0.tab`)
+
+## **Usage**
+```bash
+python classification.py
+```
 
 # Task 6: Pangenome Visualisation Using Panache
 
