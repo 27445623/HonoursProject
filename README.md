@@ -195,22 +195,10 @@ For the Get_Homologues-EST pangenome matrix:
 python classification.py pangenome_matrix_t0.tab
 ```
 
-An optional chromosome mapping file can also be supplied.
-
-```bash
-python classification.py pangenome_matrix_t0.tab cluster_to_chr.tsv
-```
-
 For OrthoMCL:
 
 ```bash
 python orthomcl_classification.py groups.txt singletons.txt
-```
-
-Optional output directory and label correction:
-
-```bash
-python orthomcl_classification.py groups.txt singletons.txt --outdir orthomcl_results --fix-labels
 ```
 
 ---
