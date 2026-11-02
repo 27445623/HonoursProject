@@ -1,0 +1,96 @@
+# Download Panache
+
+Panache was downloaded from the SouthGreenPlatform GitHub repository using `wget`:
+
+```bash
+wget https://github.com/SouthGreenPlatform/panache/archive/refs/heads/main.tar.gz
+```
+
+# Install the application dependencies:
+
+```bash
+apptainer exec --bind ~/panache-main:/app node_18.sif \
+  bash -c "cd /app && npm install"
+```
+
+# Build the application
+
+The application build was attempted with npm. The legacy OpenSSL option was included to address the Node.js/OpenSSL compatibility issue encountered during the build:
+
+```bash
+apptainer exec --bind ~/panache-main:/app node_18.sif \
+  bash -c "cd /app && NODE_OPTIONS=--openssl-legacy-provider npm run build"
+```
+
+# Prepare the PAV matrix files
+
+# Sort matrices by coordinate and split
+
+Chromosome 3H, 5H, 6H and 7H matrices, were sorted numerically by the second column w. The sorted matrices were then divided into three parts.
+
+Example command pattern used for 5H, 6H and 7H:
+
+```bash
+for chr in 3H 5H 6H 7H; do
+    input=~/PGGB_out_${chr}/pggb_out/pavs${chr}.matrix.tsv
+    sorted=~/PGGB_out_${chr}/pggb_out/pavs${chr}.sorted.matrix.tsv
+    output=~/PGGB_out_${chr}/pggb_out/panache_parts
+
+    mkdir -p "$output"
+
+    {
+        head -n 1 "$input"
+        tail -n +2 "$input" | sort -k2,2n
+    } > "$sorted"
+
+    total=$(($(wc -l < "$sorted") - 1))
+    part=$(( (total + 2) / 3 ))
+
+    rm -f "$output/${chr}_tmp_"*
+    rm -f "$output/${chr}_part_"*.matrix.tsv
+
+    tail -n +2 "$sorted" | split -l "$part" - "$output/${chr}_tmp_"
+
+    i=1
+    for file in "$output"/${chr}_tmp_*; do
+        {
+            head -n 1 "$sorted"
+            cat "$file"
+        } > "$output/${chr}_part_${i}.matrix.tsv"
+
+        rm "$file"
+        i=$((i + 1))
+    done
+done
+```
+# Run python script to get into correct format (format_panache.py)
+
+# Run Panache
+
+Panache was launched from the HPC using the Node.js 18 Apptainer image
+
+```bash
+apptainer exec --bind ~/panache-main:/app node_18.sif \
+  bash -c "cd /app && NODE_OPTIONS=--openssl-legacy-provider npm run serve -- --host 0.0.0.0"
+```
+
+The server terminal was kept running while Panache was being accessed.
+
+# Access Panache in a web browser
+
+A separate SSH port-forwarding connection is required to access a server running on the HPC from a local computer. The exact tunnel command depends on the HPC node on which the Panache server is running. The command used for this project was not present in the supplied shell-history extract, so it is not reproduced here.
+
+Once the SSH tunnel is configured, Panache can be opened in a local browser at:
+
+```bash
+ssh -L 8080:10.55.41.12:8080 27445623@hpc2.sun.ac.za
+```
+
+## Overall workflow
+
+1. Download the Panache source archive from GitHub.
+2. Use the Node.js 18 Apptainer image to install the application dependencies.
+3. Build the application with the legacy OpenSSL option.
+4. Prepare the PGGB PAV matrices by retaining headers, sorting records by coordinate and splitting large matrices into smaller files.
+5. Launch the Panache server on the HPC using Apptainer.
+7. Establish an SSH tunnel and open Panache through the local browser.
